@@ -1,14 +1,24 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Menu as MenuIcon, X, LogOut, Shield } from 'lucide-react';
+import { ShoppingCart, User, Menu as MenuIcon, X, LogOut } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import useCartStore from '../../store/cartStore';
 import { useToast } from '../ui/Toast';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAuthenticated, isAdmin, logout } = useAuthStore();
+  const { cart, fetchCart } = useCartStore();
   const { addToast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated]);
+
+  const itemCount = (cart?.items || []).reduce((sum, item) => sum + item.quantity, 0);
 
   const navLinks = [
     { to: '/menu', label: 'Menu' },
@@ -58,9 +68,11 @@ export function Navbar() {
               aria-label="Shopping Cart"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-[#E4572E] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                0
-              </span>
+              {itemCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-[#E4572E] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm animate-pulse">
+                  {itemCount}
+                </span>
+              )}
             </Link>
 
             {isAuthenticated ? (

@@ -9,6 +9,8 @@ import adminRoutes from './routes/adminRoutes.js';
 import pizzaRoutes from './routes/pizzaRoutes.js';
 import optionRoutes from './routes/optionRoutes.js';
 import ingredientRoutes from './routes/ingredientRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 
 const app = express();
 
@@ -30,6 +32,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/pizzas', pizzaRoutes);
 app.use('/api/options', optionRoutes);
 app.use('/api/ingredients', ingredientRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Global 404 handler for unmatched /api routes
 app.use('/api/*', (req, res) => {

@@ -2,6 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ShoppingBag, RotateCcw, AlertTriangle } from 'lucide-react';
 import usePizzaStore from '../store/pizzaStore';
+import useCartStore from '../store/cartStore';
+import useAuthStore from '../store/authStore';
 import Button from '../components/ui/Button';
 import BuildShot from '../components/ui/BuildShot';
 import RollingPrice from '../components/ui/RollingPrice';
@@ -14,9 +16,10 @@ import ToppingsStep from '../components/pizza-builder/ToppingsStep';
 export function PizzaBuilder() {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { user } = useAuthStore();
+  const { addItem } = useCartStore();
   const {
     fetchCatalogue,
-    loading,
     selectedSize,
     selectedSauce,
     selectedCheese,
@@ -28,6 +31,7 @@ export function PizzaBuilder() {
   } = usePizzaStore();
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     fetchCatalogue();
@@ -40,13 +44,40 @@ export function PizzaBuilder() {
     { title: 'Toppings Tray', component: <ToppingsStep /> }
   ];
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!user) {
+      addToast('Please sign in to add your pizza build to your cart.', { type: 'info' });
+      navigate('/login', { state: { from: { pathname: '/build-your-pizza' } } });
+      return;
+    }
+
     if (!isAvailable) {
       addToast('Cannot add build: some selected items are out of stock.', { type: 'error' });
       return;
     }
-    addToast(`Added custom ${selectedSize?.name || 'Pizza'} to cart!`, { type: 'success' });
-    navigate('/cart');
+
+    if (!selectedSize || !selectedSauce || !selectedCheese) {
+      addToast('Please complete size, sauce, and cheese selections.', { type: 'error' });
+      return;
+    }
+
+    setAdding(true);
+    const res = await addItem({
+      sizeId: selectedSize._id,
+      sauceId: selectedSauce._id,
+      cheeseId: selectedCheese._id,
+      toppingIds: selectedToppings.map((t) => t._id),
+      quantity: 1
+    });
+
+    setAdding(false);
+
+    if (res.success) {
+      addToast(`Added custom ${selectedSize.name} to cart!`, { type: 'success' });
+      navigate('/cart');
+    } else {
+      addToast(res.error || 'Failed to add build to cart.', { type: 'error' });
+    }
   };
 
   return (
@@ -133,6 +164,7 @@ export function PizzaBuilder() {
                 size="md"
                 onClick={handleAddToCart}
                 disabled={!isAvailable}
+                loading={adding}
               >
                 <ShoppingBag className="w-4 h-4 mr-1.5" /> Add Build to Box
               </Button>
@@ -217,6 +249,7 @@ export function PizzaBuilder() {
               size="lg"
               onClick={handleAddToCart}
               disabled={!isAvailable}
+              loading={adding}
               className="w-full mt-2"
             >
               <ShoppingBag className="w-4 h-4 mr-2" /> Add Custom Build to Box
