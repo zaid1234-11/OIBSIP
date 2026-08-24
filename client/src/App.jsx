@@ -1,9 +1,12 @@
-﻿import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 // Layouts
 import CustomerLayout from './components/layouts/CustomerLayout';
 import AdminLayout from './components/layouts/AdminLayout';
+
+// Auth Guard
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Customer pages
 import Home from './pages/Home';
@@ -33,8 +36,15 @@ import Settings from './admin/Settings';
 
 // Dev
 import StyleGuide from './pages/StyleGuide';
+import useAuthStore from './store/authStore';
 
 export function App() {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
   return (
     <Routes>
       {/* Customer routes with shared layout */}
@@ -44,24 +54,63 @@ export function App() {
         <Route path="/pizza/:id" element={<PizzaDetail />} />
         <Route path="/build-your-pizza" element={<PizzaBuilder />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/order/:id" element={<OrderDetail />} />
-        <Route path="/profile" element={<Profile />} />
+
+        {/* Public auth pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+
+        {/* Protected Customer Routes */}
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Dev route */}
         <Route path="/styleguide" element={<StyleGuide />} />
       </Route>
 
-      {/* Admin login (no layout) */}
+      {/* Admin login (standalone, outside admin layout) */}
       <Route path="/admin/login" element={<AdminLogin />} />
 
-      {/* Admin routes with admin layout */}
-      <Route element={<AdminLayout />}>
+      {/* Protected Admin routes */}
+      <Route
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />

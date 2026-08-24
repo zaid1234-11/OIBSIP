@@ -1,9 +1,14 @@
 ﻿import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu as MenuIcon, X } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { ShoppingCart, User, Menu as MenuIcon, X, LogOut, Shield } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
+import { useToast } from '../ui/Toast';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, isAuthenticated, isAdmin, logout } = useAuthStore();
+  const { addToast } = useToast();
+  const navigate = useNavigate();
 
   const navLinks = [
     { to: '/menu', label: 'Menu' },
@@ -17,6 +22,12 @@ export function Navbar() {
         ? 'text-[#E4572E]'
         : 'text-[#4A121A]/80 hover:text-[#4A121A]'
     }`;
+
+  const handleLogout = () => {
+    logout();
+    addToast('Signed out successfully.', { type: 'info' });
+    navigate('/login');
+  };
 
   return (
     <nav className="sticky top-0 z-40 bg-[#FAF6EE]/90 backdrop-blur-md border-b border-[#E2D6C2]">
@@ -40,7 +51,7 @@ export function Navbar() {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               to="/cart"
               className="relative p-2.5 rounded-full text-[#4A121A] hover:bg-[#F4EDE0] transition-colors"
@@ -52,13 +63,37 @@ export function Navbar() {
               </span>
             </Link>
 
-            <Link
-              to="/login"
-              className="hidden md:inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#DCD0B0] bg-[#F4EDE0] text-sm font-semibold text-[#4A121A] hover:bg-[#EAE0CE] transition-all no-underline shadow-sm"
-            >
-              <User className="w-4 h-4" />
-              Login
-            </Link>
+            {isAuthenticated ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  to="/profile"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#DCD0B0] bg-[#F4EDE0] text-sm font-semibold text-[#4A121A] hover:bg-[#EAE0CE] transition-all no-underline shadow-sm"
+                >
+                  <User className="w-4 h-4 text-[#E4572E]" />
+                  <span>{user?.name?.split(' ')[0] || 'Profile'}</span>
+                  {isAdmin && (
+                    <span className="text-[10px] font-mono font-bold bg-[#E4572E] text-white px-1.5 py-0.2 rounded">
+                      Admin
+                    </span>
+                  )}
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full text-[#736254] hover:text-[#4A121A] hover:bg-[#F4EDE0] transition-colors cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="hidden md:inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#DCD0B0] bg-[#F4EDE0] text-sm font-semibold text-[#4A121A] hover:bg-[#EAE0CE] transition-all no-underline shadow-sm"
+              >
+                <User className="w-4 h-4" />
+                Login
+              </Link>
+            )}
 
             {/* Mobile hamburger */}
             <button
@@ -84,15 +119,35 @@ export function Navbar() {
               <div className="py-2">{link.label}</div>
             </NavLink>
           ))}
-          <NavLink
-            to="/login"
-            className={linkClasses}
-            onClick={() => setMobileOpen(false)}
-          >
-            <div className="py-2 flex items-center gap-2">
-              <User className="w-4 h-4" /> Login
-            </div>
-          </NavLink>
+          {isAuthenticated ? (
+            <>
+              <NavLink
+                to="/profile"
+                className={linkClasses}
+                onClick={() => setMobileOpen(false)}
+              >
+                <div className="py-2 flex items-center gap-2">
+                  <User className="w-4 h-4" /> Profile ({user?.name})
+                </div>
+              </NavLink>
+              <button
+                onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="w-full text-left py-2 text-sm font-semibold text-[#E4572E] flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Sign Out
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              className={linkClasses}
+              onClick={() => setMobileOpen(false)}
+            >
+              <div className="py-2 flex items-center gap-2">
+                <User className="w-4 h-4" /> Login
+              </div>
+            </NavLink>
+          )}
         </div>
       )}
     </nav>
