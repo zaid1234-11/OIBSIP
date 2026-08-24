@@ -1,0 +1,37 @@
+﻿:root {
+  --charcoal-ember: #1E1A17;
+  --dough-cream: #F6EEDF;
+  --tomato: #E4572E;
+  --basil: #456B4E;
+  --mozzarella: #F2B705;
+  --char-grey: #4A433C;
+  --char-dark: #14110F;
+  --card-radius: 20px;
+  --button-radius: 12px;
+  --pill-radius: 999px;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--charcoal-ember);
+  color: var(--dough-cream);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
