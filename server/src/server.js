@@ -3,8 +3,12 @@ import cors from 'cors';
 import env from './config/env.js';
 import connectDB from './config/db.js';
 import seedAdminUser from './utils/seedAdmin.js';
+import seedCatalogue from './utils/seedCatalogue.js';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import pizzaRoutes from './routes/pizzaRoutes.js';
+import optionRoutes from './routes/optionRoutes.js';
+import ingredientRoutes from './routes/ingredientRoutes.js';
 
 const app = express();
 
@@ -23,21 +27,25 @@ app.get('/api/ping', (req, res) => {
 // Mount Routes per Spec Section 5
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/pizzas', pizzaRoutes);
+app.use('/api/options', optionRoutes);
+app.use('/api/ingredients', ingredientRoutes);
 
 // Global 404 handler for unmatched /api routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({ error: `API route ${req.originalUrl} not found.` });
 });
 
-// Start Express Server immediately so it never hangs
+// Start Express Server immediately
 const server = app.listen(env.port, () => {
   console.log(`[CRUST Server] Running in ${env.nodeEnv} mode on port ${env.port}`);
 });
 
-// Connect to MongoDB asynchronously
+// Connect to MongoDB asynchronously & seed
 connectDB().then(async (conn) => {
   if (conn) {
     await seedAdminUser();
+    await seedCatalogue();
   }
 });
 
