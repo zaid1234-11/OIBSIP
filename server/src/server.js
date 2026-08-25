@@ -11,6 +11,7 @@ import optionRoutes from './routes/optionRoutes.js';
 import ingredientRoutes from './routes/ingredientRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use('/api/options', optionRoutes);
 app.use('/api/ingredients', ingredientRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Global 404 handler for unmatched /api routes
 app.use('/api/*', (req, res) => {
