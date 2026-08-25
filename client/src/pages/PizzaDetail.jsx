@@ -1,24 +1,35 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Button from '../components/ui/Button';
 import BuildShot from '../components/ui/BuildShot';
 import { useToast } from '../components/ui/Toast';
 import Skeleton from '../components/ui/Skeleton';
+import useCartStore from '../store/cartStore';
+import useAuthStore from '../store/authStore';
 
 export function PizzaDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { user } = useAuthStore();
+  const { addItem } = useCartStore();
+
   const [pizza, setPizza] = useState(null);
+  const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addingStandard, setAddingStandard] = useState(false);
 
   useEffect(() => {
-    const fetchPizza = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/pizzas/${id}`);
-        setPizza(response.data.pizza);
+        const [pizzaRes, optionsRes] = await Promise.all([
+          api.get(`/pizzas/${id}`),
+          api.get('/options')
+        ]);
+        setPizza(pizzaRes.data.pizza);
+        setOptions(optionsRes.data.options || []);
       } catch (err) {
         console.error('Failed to load pizza detail:', err);
       } finally {
@@ -26,13 +37,43 @@ export function PizzaDetail() {
       }
     };
     if (id) {
-      fetchPizza();
+      fetchData();
     }
   }, [id]);
 
-  const handleAddStandard = () => {
-    addToast(`Added standard ${pizza?.name} to cart!`, { type: 'success' });
-    navigate('/cart');
+  const handleAddStandard = async () => {
+    if (!user) {
+      addToast('Please log in to add items to your pizza box.', { type: 'info' });
+      navigate('/login', { state: { from: { pathname: `/pizza/${id}` } } });
+      return;
+    }
+
+    const mediumSize = options.find(o => o.type === 'size' && o.name.toLowerCase().includes('medium')) || options.find(o => o.type === 'size');
+    const tomatoSauce = options.find(o => o.type === 'sauce' && o.name.toLowerCase().includes('tomato')) || options.find(o => o.type === 'sauce');
+    const mozzarella = options.find(o => o.type === 'cheese' && o.name.toLowerCase().includes('mozzarella')) || options.find(o => o.type === 'cheese');
+
+    if (!mediumSize || !tomatoSauce || !mozzarella) {
+      addToast('Standard builder options unavailable.', { type: 'error' });
+      return;
+    }
+
+    setAddingStandard(true);
+    const res = await addItem({
+      pizzaId: pizza._id,
+      sizeId: mediumSize._id,
+      sauceId: tomatoSauce._id,
+      cheeseId: mozzarella._id,
+      toppingIds: [],
+      quantity: 1
+    });
+    setAddingStandard(false);
+
+    if (res.success) {
+      addToast(`Added standard ${pizza?.name} to your box!`, { type: 'success' });
+      navigate('/cart');
+    } else {
+      addToast(res.error || 'Failed to add pizza to box.', { type: 'error' });
+    }
   };
 
   if (loading) {
@@ -70,9 +111,9 @@ export function PizzaDetail() {
                     : 'bg-[#E4572E]/15 text-[#E4572E] border border-[#E4572E]/30'
                 }`}
               >
-                {pizza.category === 'veg' ? '🌿 Vegetarian' : '🥩 Non-Vegetarian'}
+                {pizza.category === 'veg' ? '🌿 Vegetarian' : '🍖 Non-Vegetarian'}
               </span>
-              <span className="text-xs font-mono text-[#736254]">• Signature Recipe</span>
+              <span className="text-xs font-mono text-[#736254]">✦ Signature Recipe</span>
             </div>
             <h1 className="text-4xl font-display font-extrabold text-[#4A121A]">{pizza.name}</h1>
             <p className="text-sm text-[#736254] mt-2 leading-relaxed">{pizza.description}</p>
@@ -87,7 +128,7 @@ export function PizzaDetail() {
               {pizza.defaultRecipe && pizza.defaultRecipe.length > 0 ? (
                 pizza.defaultRecipe.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center">
-                    <span>• {item.ingredient?.name || 'Artisanal Ingredient'}</span>
+                    <span>✦ {item.ingredient?.name || 'Artisanal Ingredient'}</span>
                     <span className="font-mono text-[#2C1810]">
                       {item.quantity} {item.ingredient?.unit || 'g'}
                     </span>
@@ -110,7 +151,12 @@ export function PizzaDetail() {
                 Customize in Builder &rarr;
               </Button>
             </Link>
-            <Button variant="customer-secondary" size="lg" onClick={handleAddStandard}>
+            <Button
+              variant="customer-secondary"
+              size="lg"
+              onClick={handleAddStandard}
+              loading={addingStandard}
+            >
               Add Standard to Box
             </Button>
           </div>

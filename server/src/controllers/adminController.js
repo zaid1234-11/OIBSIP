@@ -128,8 +128,41 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
+// GET /api/admin/customers (List customers with order stats)
+export const getAdminCustomers = async (req, res) => {
+  try {
+    const customers = await User.find({ role: 'customer' })
+      .select('name email isVerified createdAt')
+      .sort({ createdAt: -1 });
+
+    // Enhance each customer with their order history summary
+    const enhancedCustomers = await Promise.all(
+      customers.map(async (cust) => {
+        const orderCount = await Order.countDocuments({ user: cust._id });
+        const orders = await Order.find({ user: cust._id, paymentStatus: 'paid' }).select('total');
+        const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+        return {
+          _id: cust._id,
+          name: cust.name,
+          email: cust.email,
+          isVerified: cust.isVerified,
+          createdAt: cust.createdAt,
+          orderCount,
+          totalSpent
+        };
+      })
+    );
+
+    return res.status(200).json({ customers: enhancedCustomers });
+  } catch (error) {
+    console.error('[getAdminCustomers Error]:', error);
+    return res.status(500).json({ error: 'Failed to fetch customer list.' });
+  }
+};
+
 export default {
   getDashboardStats,
   getAdminOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getAdminCustomers
 };

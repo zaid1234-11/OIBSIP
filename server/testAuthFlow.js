@@ -3,6 +3,7 @@
 const BASE_URL = 'http://localhost:5000/api';
 
 async function runTests() {
+  const testEmail = `rohan_${Date.now()}@test.com`;
   console.log('--- STARTING PHASE 3 AUTHENTICATION TESTS ---');
 
   // 1. Register customer
@@ -11,7 +12,7 @@ async function runTests() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name: 'Rohan Sharma',
-      email: 'rohan@test.com',
+      email: testEmail,
       password: 'Password@123'
     })
   });
@@ -41,7 +42,7 @@ async function runTests() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: 'rohan@test.com',
+      email: testEmail,
       password: 'Password@123'
     })
   });
@@ -59,7 +60,7 @@ async function runTests() {
   const meData = await meRes.json();
   console.log('[TEST 4] Protected /auth/me:', meRes.status, 'User:', meData.user.name, meData.user.email);
   assert.strictEqual(meRes.status, 200);
-  assert.strictEqual(meData.user.email, 'rohan@test.com');
+  assert.strictEqual(meData.user.email, testEmail);
 
   // 5. Test Server-side RBAC Rejection: Hit /api/admin/test with customer token
   const rbacRejectRes = await fetch(`${BASE_URL}/admin/test`, {
@@ -99,7 +100,7 @@ async function runTests() {
   const forgotRes = await fetch(`${BASE_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'rohan@test.com' })
+    body: JSON.stringify({ email: testEmail })
   });
   const forgotData = await forgotRes.json();
   console.log('[TEST 8] Forgot Password:', forgotRes.status, forgotData.message);
@@ -125,7 +126,7 @@ async function runTests() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: 'rohan@test.com',
+      email: testEmail,
       password: 'NewPassword@456'
     })
   });

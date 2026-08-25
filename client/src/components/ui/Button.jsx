@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 const variants = {
@@ -15,10 +15,14 @@ const variants = {
     'bg-gradient-to-r from-[#E4572E] to-[#C33C14] text-white hover:brightness-110 shadow-md',
   'customer-secondary':
     'border-2 border-[#DCD0B0] bg-[#FAF6EE] text-[#4A121A] hover:bg-[#F4EDE0] hover:border-[#4A121A]',
+  'customer-ghost':
+    'text-[#736254] hover:text-[#4A121A] hover:bg-[#FAF6EE] bg-transparent',
   
   // Explicit admin variants
   'admin-primary':
     'bg-[#E4572E] text-[#F6EEDF] hover:brightness-110 active:brightness-95 shadow-sm',
+  'admin-secondary':
+    'border border-[#4A433C] bg-[#2A2421] text-[#F6EEDF] hover:bg-[#3A322D] hover:border-[#E4572E]/50',
   'admin-ghost':
     'text-[#A89E94] hover:text-[#F6EEDF] hover:bg-white/5 bg-transparent',
 };

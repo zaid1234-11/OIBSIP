@@ -238,7 +238,7 @@ export function Dashboard() {
                             {action.label}
                           </button>
                         ) : (
-                          <span className="text-[11px] font-mono text-[#9E8C7E]">✓ Finished</span>
+                          <span className="text-[11px] font-mono text-[#9E8C7E]">✓✓ Done</span>
                         )}
                       </td>
                     </tr>

@@ -3,7 +3,8 @@ import { adminLogin } from '../controllers/authController.js';
 import {
   getDashboardStats,
   getAdminOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getAdminCustomers
 } from '../controllers/adminController.js';
 import auth from '../middleware/auth.js';
 import requireRole from '../middleware/requireRole.js';
@@ -29,5 +30,8 @@ router.get('/dashboard/stats', auth, requireRole('admin'), getDashboardStats);
 // Admin Order queue management
 router.get('/orders', auth, requireRole('admin'), getAdminOrders);
 router.patch('/orders/:id/status', auth, requireRole('admin'), updateOrderStatus);
+
+// Customers directory
+router.get('/customers', auth, requireRole('admin'), getAdminCustomers);
 
 export default router;

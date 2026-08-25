@@ -71,7 +71,7 @@ export function Orders() {
         };
       case 'out_for_delivery':
         return {
-          label: 'Mark as Delivered ✓',
+          label: 'Mark as Delivered ✓✓',
           nextStatus: 'delivered',
           btnClass: 'bg-[#456B4E] hover:bg-[#38563e] text-white',
           icon: CheckCircle2
