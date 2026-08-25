@@ -1,0 +1,182 @@
+﻿@import "tailwindcss";
+
+/* ============================================================
+   CRUST Dual-Theme Design Tokens
+   ============================================================ */
+
+@theme {
+  /* Fonts */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Universal radius */
+  --radius-card: 20px;
+  --radius-button: 12px;
+  --radius-pill: 999px;
+
+  /* Universal shadows */
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-card-dark: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  /* Breakpoints */
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+/* ============================================================
+   Customer Theme Scoping (.theme-customer)
+   Warm cream base, oxblood, ember gradient, basil, sesame, pill radius
+   ============================================================ */
+.theme-customer {
+  --bg-app: #FAF6EE;
+  --bg-surface: #FFFFFF;
+  --bg-card: #F4EDE0;
+  --bg-card-alt: #EFE4D2;
+  --text-primary: #2C1810;
+  --text-secondary: #736254;
+  --text-muted: #9E8C7E;
+  
+  --color-oxblood: #4A121A;
+  --color-ember: #E4572E;
+  --color-ember-deep: #C33C14;
+  --color-basil: #456B4E;
+  --color-sesame: #E8DCBE;
+  --color-sesame-border: #DCD0B0;
+  --color-border: #E2D6C2;
+
+  --btn-radius: 999px;
+  
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+/* ============================================================
+   Admin Theme Scoping (.theme-admin)
+   Charcoal-ember, dough-cream, tomato, mozzarella, char-grey, 12px radius
+   ============================================================ */
+.theme-admin {
+  --bg-app: #1E1A17;
+  --bg-surface: #26211E;
+  --bg-card: #2C2621;
+  --bg-card-alt: #14110F;
+  --text-primary: #F6EEDF;
+  --text-secondary: #A89E94;
+  --text-muted: #73685E;
+
+  --color-tomato: #E4572E;
+  --color-mozzarella: #F2B705;
+  --color-basil: #456B4E;
+  --color-char-grey: #4A433C;
+  --color-char-dark: #14110F;
+  --color-dough-cream: #F6EEDF;
+  --color-border: #4A433C;
+
+  --btn-radius: 12px;
+
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+/* ============================================================
+   Base Layer
+   ============================================================ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    line-height: 1.6;
+    background-color: #1E1A17;
+    color: #F6EEDF;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  h3, h4, h5, h6 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  code, kbd, samp, pre {
+    font-family: var(--font-mono);
+  }
+}
+
+/* ============================================================
+   Component Layer & Animations
+   ============================================================ */
+@layer components {
+  /* Ticket stub dashed perforation */
+  .ticket-perforation {
+    border-top: 2px dashed #C8BBA7;
+  }
+
+  /* Shimmer animation */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(150, 150, 150, 0.1) 25%,
+      rgba(150, 150, 150, 0.25) 50%,
+      rgba(150, 150, 150, 0.1) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Toast animations */
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes toast-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+}
