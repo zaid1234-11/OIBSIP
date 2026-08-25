@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Camera, Layers } from 'lucide-react';
 import api from '../services/api';
 import Button from '../components/ui/Button';
 import BuildShot from '../components/ui/BuildShot';
@@ -19,6 +20,7 @@ export function PizzaDetail() {
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addingStandard, setAddingStandard] = useState(false);
+  const [viewMode, setViewMode] = useState('photo'); // 'photo' | 'builder'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,9 +43,25 @@ export function PizzaDetail() {
     }
   }, [id]);
 
+  const getPizzaImage = (pizza) => {
+    if (!pizza) return '/images/pizzas/margherita.jpg';
+    if (pizza.image && pizza.image.startsWith('/')) return pizza.image;
+    if (pizza.image && ['margherita', 'pepperoni', 'tuscan-garden', 'quattro-formaggi', 'diavola', 'bbq-chicken'].includes(pizza.image)) {
+      return `/images/pizzas/${pizza.image}.jpg`;
+    }
+    const nameLower = (pizza.name || '').toLowerCase();
+    if (nameLower.includes('pep')) return '/images/pizzas/pepperoni.jpg';
+    if (nameLower.includes('margherita')) return '/images/pizzas/margherita.jpg';
+    if (nameLower.includes('tuscan') || nameLower.includes('garden')) return '/images/pizzas/tuscan-garden.jpg';
+    if (nameLower.includes('formaggi') || nameLower.includes('cheese')) return '/images/pizzas/quattro-formaggi.jpg';
+    if (nameLower.includes('diavola') || nameLower.includes('spicy')) return '/images/pizzas/diavola.jpg';
+    if (nameLower.includes('chicken') || nameLower.includes('bbq')) return '/images/pizzas/bbq-chicken.jpg';
+    return '/images/pizzas/margherita.jpg';
+  };
+
   const handleAddStandard = async () => {
     if (!user) {
-      addToast('Please log in to add items to your pizza box.', { type: 'info' });
+      addToast('Please sign in to add items to your pizza box.', { type: 'info' });
       navigate('/login', { state: { from: { pathname: `/pizza/${id}` } } });
       return;
     }
@@ -99,8 +117,52 @@ export function PizzaDetail() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        <BuildShot size="medium" />
+        {/* Left Visual Column */}
+        <div className="space-y-4">
+          <div className="relative w-full aspect-square rounded-[24px] overflow-hidden border border-[#E2D6C2] shadow-lg bg-[#F4EDE0]">
+            {viewMode === 'photo' ? (
+              <img
+                src={getPizzaImage(pizza)}
+                alt={pizza.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = '/images/pizzas/margherita.jpg';
+                }}
+              />
+            ) : (
+              <BuildShot
+                size="medium"
+                sauce="tomato"
+                cheese="mozzarella"
+                toppings={pizza.category === 'veg' ? [{ name: 'Basil' }] : [{ name: 'Pepperoni' }]}
+              />
+            )}
 
+            {/* View Switcher Tag */}
+            <div className="absolute top-4 left-4 flex gap-1.5 bg-black/40 backdrop-blur-md p-1 rounded-full border border-white/20">
+              <button
+                type="button"
+                onClick={() => setViewMode('photo')}
+                className={`px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  viewMode === 'photo' ? 'bg-[#E4572E] text-white shadow' : 'text-white/80 hover:text-white'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" /> Oven Photo
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('builder')}
+                className={`px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  viewMode === 'builder' ? 'bg-[#E4572E] text-white shadow' : 'text-white/80 hover:text-white'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" /> Architecture
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Info Column */}
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-3">

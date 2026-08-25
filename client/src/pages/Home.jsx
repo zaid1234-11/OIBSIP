@@ -1,9 +1,70 @@
-﻿import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../services/api';
 import Button from '../components/ui/Button';
 import BuildShot from '../components/ui/BuildShot';
 
 export function Home() {
+  const [popularPizzas, setPopularPizzas] = useState([]);
+
+  useEffect(() => {
+    const fetchPopular = async () => {
+      try {
+        const res = await api.get('/pizzas');
+        if (res.data?.pizzas?.length > 0) {
+          setPopularPizzas(res.data.pizzas.slice(0, 3));
+        }
+      } catch (err) {
+        console.warn('Could not fetch pizzas for home:', err);
+      }
+    };
+    fetchPopular();
+  }, []);
+
+  const defaultPizzas = [
+    {
+      _id: '1',
+      name: 'Margherita Classica',
+      description: 'Fresh basil, whole-milk mozzarella, San Marzano D.O.P. tomato sauce',
+      basePrice: 299,
+      category: 'veg',
+      image: '/images/pizzas/margherita.jpg'
+    },
+    {
+      _id: '2',
+      name: 'Rustic Pepperoni',
+      description: 'Cupping charred pepperoni, smoked provolone, hot honey drizzle',
+      basePrice: 449,
+      category: 'non-veg',
+      image: '/images/pizzas/pepperoni.jpg'
+    },
+    {
+      _id: '3',
+      name: 'Tuscan Garden',
+      description: 'Fire-roasted bell peppers, red onion, button mushrooms, kalamata olives',
+      basePrice: 379,
+      category: 'veg',
+      image: '/images/pizzas/tuscan-garden.jpg'
+    },
+  ];
+
+  const getPizzaImage = (pizza) => {
+    if (pizza.image && pizza.image.startsWith('/')) return pizza.image;
+    if (pizza.image && ['margherita', 'pepperoni', 'tuscan-garden', 'quattro-formaggi', 'diavola', 'bbq-chicken'].includes(pizza.image)) {
+      return `/images/pizzas/${pizza.image}.jpg`;
+    }
+    const nameLower = (pizza.name || '').toLowerCase();
+    if (nameLower.includes('pep')) return '/images/pizzas/pepperoni.jpg';
+    if (nameLower.includes('margherita')) return '/images/pizzas/margherita.jpg';
+    if (nameLower.includes('tuscan') || nameLower.includes('garden')) return '/images/pizzas/tuscan-garden.jpg';
+    if (nameLower.includes('formaggi') || nameLower.includes('cheese')) return '/images/pizzas/quattro-formaggi.jpg';
+    if (nameLower.includes('diavola') || nameLower.includes('spicy')) return '/images/pizzas/diavola.jpg';
+    if (nameLower.includes('chicken') || nameLower.includes('bbq')) return '/images/pizzas/bbq-chicken.jpg';
+    return '/images/pizzas/margherita.jpg';
+  };
+
+  const displayPizzas = popularPizzas.length > 0 ? popularPizzas : defaultPizzas;
+
   return (
     <div className="space-y-16">
       {/* Hero Section */}
@@ -45,31 +106,50 @@ export function Home() {
             <p className="text-sm text-[#736254] mt-1">Tested recipes perfected by our pizzaiolos</p>
           </div>
           <Link to="/menu" className="text-sm font-semibold text-[#E4572E] hover:underline">
-            View all 12 pizzas &rarr;
+            View full menu &rarr;
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            { id: 1, name: 'Margherita Classica', desc: 'Fresh basil, whole-milk mozzarella, San Marzano tomato', price: 299, veg: true },
-            { id: 2, name: 'Rustic Pepperoni', desc: 'Cupping pepperoni, smoked provolone, hot honey drizzle', price: 449, veg: false },
-            { id: 3, name: 'Tuscan Garden', desc: 'Fire-roasted bell peppers, red onion, button mushrooms, kalamata', price: 379, veg: true },
-          ].map(pizza => (
-            <div key={pizza.id} className="bg-[#FFFFFF] rounded-[20px] p-6 border border-[#E2D6C2] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          {displayPizzas.map((pizza) => (
+            <div
+              key={pizza._id}
+              className="group bg-[#FFFFFF] rounded-[24px] p-5 border border-[#E2D6C2] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+            >
               <div>
-                <div className="w-full h-44 rounded-[14px] bg-gradient-to-br from-[#F4EDE0] to-[#EAE0CE] flex items-center justify-center mb-5 border border-[#E8DCBE]">
-                  <span className="font-display text-4xl">🍕</span>
+                <div className="w-full h-52 rounded-[18px] overflow-hidden mb-5 border border-[#E8DCBE] relative bg-[#F4EDE0]">
+                  <img
+                    src={getPizzaImage(pizza)}
+                    alt={pizza.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.src = '/images/pizzas/margherita.jpg';
+                    }}
+                  />
+                  <span
+                    className={`absolute top-3 right-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full uppercase shadow-sm ${
+                      pizza.category === 'veg'
+                        ? 'bg-[#456B4E] text-white'
+                        : 'bg-[#E4572E] text-white'
+                    }`}
+                  >
+                    {pizza.category === 'veg' ? '🌿 Veg' : '🍖 Non-Veg'}
+                  </span>
                 </div>
+
                 <div className="flex items-center gap-2 mb-1.5">
                   <h3 className="font-body font-bold text-lg text-[#2C1810]">{pizza.name}</h3>
-                  <span className={`w-2 h-2 rounded-full ${pizza.veg ? 'bg-[#456B4E]' : 'bg-[#E4572E]'}`} />
                 </div>
-                <p className="text-sm text-[#736254] leading-relaxed">{pizza.desc}</p>
+                <p className="text-sm text-[#736254] leading-relaxed line-clamp-2">{pizza.description}</p>
               </div>
+
               <div className="flex justify-between items-center mt-6 pt-4 border-t border-[#F4EDE0]">
-                <span className="font-mono font-bold text-xl text-[#E4572E]">{'\u20B9'}{pizza.price}</span>
-                <Link to={`/pizza/${pizza.id}`}>
-                  <Button variant="customer-secondary" size="sm">Customize</Button>
+                <div>
+                  <span className="font-mono font-bold text-xl text-[#E4572E]">₹{pizza.basePrice}</span>
+                  <span className="text-[11px] text-[#736254] block">Medium 10"</span>
+                </div>
+                <Link to={`/pizza/${pizza._id}`}>
+                  <Button variant="customer-secondary" size="sm">Order & Customize &rarr;</Button>
                 </Link>
               </div>
             </div>

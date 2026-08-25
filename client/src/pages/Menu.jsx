@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import Button from '../components/ui/Button';
@@ -23,6 +23,21 @@ export function Menu() {
     };
     fetchPizzas();
   }, []);
+
+  const getPizzaImage = (pizza) => {
+    if (pizza.image && pizza.image.startsWith('/')) return pizza.image;
+    if (pizza.image && ['margherita', 'pepperoni', 'tuscan-garden', 'quattro-formaggi', 'diavola', 'bbq-chicken'].includes(pizza.image)) {
+      return `/images/pizzas/${pizza.image}.jpg`;
+    }
+    const nameLower = (pizza.name || '').toLowerCase();
+    if (nameLower.includes('pep')) return '/images/pizzas/pepperoni.jpg';
+    if (nameLower.includes('margherita')) return '/images/pizzas/margherita.jpg';
+    if (nameLower.includes('tuscan') || nameLower.includes('garden')) return '/images/pizzas/tuscan-garden.jpg';
+    if (nameLower.includes('formaggi') || nameLower.includes('cheese')) return '/images/pizzas/quattro-formaggi.jpg';
+    if (nameLower.includes('diavola') || nameLower.includes('spicy')) return '/images/pizzas/diavola.jpg';
+    if (nameLower.includes('chicken') || nameLower.includes('bbq')) return '/images/pizzas/bbq-chicken.jpg';
+    return '/images/pizzas/margherita.jpg';
+  };
 
   const filteredPizzas = pizzas.filter((p) => {
     if (filter === 'veg') return p.category === 'veg';
@@ -82,29 +97,31 @@ export function Menu() {
           {filteredPizzas.map((pizza) => (
             <div
               key={pizza._id}
-              className="bg-white rounded-[24px] p-6 border border-[#E2D6C2] shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+              className="group bg-white rounded-[24px] p-5 border border-[#E2D6C2] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
             >
               <div>
-                <div className="w-full h-44 rounded-[16px] bg-gradient-to-br from-[#F4EDE0] to-[#EAE0CE] flex items-center justify-center mb-5 border border-[#E8DCBE] relative overflow-hidden">
-                  <span className="font-display text-5xl select-none">🍕</span>
+                <div className="w-full h-52 rounded-[18px] overflow-hidden mb-5 border border-[#E8DCBE] relative bg-[#F4EDE0]">
+                  <img
+                    src={getPizzaImage(pizza)}
+                    alt={pizza.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.src = '/images/pizzas/margherita.jpg';
+                    }}
+                  />
                   <span
-                    className={`absolute top-3 right-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full uppercase ${
+                    className={`absolute top-3 right-3 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full uppercase shadow-sm ${
                       pizza.category === 'veg'
-                        ? 'bg-[#456B4E]/15 text-[#456B4E] border border-[#456B4E]/30'
-                        : 'bg-[#E4572E]/15 text-[#E4572E] border border-[#E4572E]/30'
+                        ? 'bg-[#456B4E] text-white'
+                        : 'bg-[#E4572E] text-white'
                     }`}
                   >
-                    {pizza.category}
+                    {pizza.category === 'veg' ? '🌿 Veg' : '🍖 Non-Veg'}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 mb-1.5">
                   <h3 className="font-body font-bold text-lg text-[#2C1810]">{pizza.name}</h3>
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full ${
-                      pizza.category === 'veg' ? 'bg-[#456B4E]' : 'bg-[#E4572E]'
-                    }`}
-                  />
                 </div>
                 <p className="text-xs text-[#736254] leading-relaxed line-clamp-2">{pizza.description}</p>
               </div>
